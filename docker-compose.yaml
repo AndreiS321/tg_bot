@@ -22,4 +22,4 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    command: ["sh", "/app/docker/app.sh" ]
+    command: ["sh", "/bot/docker/bot.sh" ]
