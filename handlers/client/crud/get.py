@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import Command
+from aiogram.filters import Command, or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto
 
@@ -56,13 +56,16 @@ async def search_next(message: CallbackQuery, state: FSMContext):
     await message.answer()
 
 
-@router.message(FindWorker.waiting_for_data)
+@router.message(or_f(FindWorker.waiting_for_data, Command("все_сотрудники")))
 @get_accessor(WorkersAccessor)
 async def search_get_data(
     message: Message, state: FSMContext, accessor: WorkersAccessor
 ):
-    data = message.text.split()
-    results = await accessor.get_all_filtered_by_name_surname(*data)
+    if message.text == "/все_сотрудники":
+        results = await accessor.get_all()
+    else:
+        data = message.text.split()
+        results = await accessor.get_all_filtered_by_name_surname(*data)
     await message.answer(text="Результаты поиска:")
     if results:
         worker = results[0]

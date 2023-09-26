@@ -21,6 +21,13 @@ class WorkersAccessor(BaseAccessor):
         res = (await self.session.scalars(stmt)).all()
         return [i.as_dataclass() for i in res]
 
+    async def get_all(
+        self, *args, **kwargs
+    ) -> list[WorkerDC]:
+        stmt = select(Worker)
+        res = (await self.session.scalars(stmt)).all()
+        return [i.as_dataclass() for i in res]
+
     async def get(self, **kwargs) -> WorkerDC:
         stmt = select(Worker).filter_by(**kwargs)
         res = await self.session.scalar(stmt)
