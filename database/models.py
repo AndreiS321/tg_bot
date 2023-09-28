@@ -1,19 +1,15 @@
-import datetime
 import os
+from datetime import date
 from pathlib import Path
 
 from aiogram.types import FSInputFile
-from sqlalchemy import String, Date
+from sqlalchemy import String, Date, func, Integer
 from sqlalchemy.orm import mapped_column, Mapped
 
-from database.dataclasses import WorkerDC
+from database.dataclasses import WorkerDC, AdminDC
 from database.decl_base import db
 
 DEFAULT_IMAGE_PATH = os.path.abspath(Path(f"media/users/workers_avatars/default.png"))
-
-
-def _get_cur_time():
-    return datetime.datetime.now()
 
 
 class Worker(db):
@@ -26,7 +22,7 @@ class Worker(db):
 
     position: Mapped[str] = mapped_column(String(255))
     project: Mapped[str] = mapped_column(String(255))
-    created_date: Mapped[str] = mapped_column(Date(), default=_get_cur_time)
+    created_date: Mapped[date] = mapped_column(Date(), server_default=func.now())
 
     @property
     def image(self) -> FSInputFile:
@@ -52,4 +48,14 @@ class Worker(db):
             position=self.position,
             project=self.project,
             created_date=self.created_date,
+            image=self.image,
         )
+
+
+class Admin(db):
+    __tablename__ = "admin"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tg_id: Mapped[int] = mapped_column(Integer())
+
+    def as_dataclass(self) -> AdminDC:
+        return AdminDC(id=self.id, tg_id=self.tg_id)

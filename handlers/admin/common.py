@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from database.crud import WorkersAccessor
+
 from handlers.decorators import get_accessor
 from handlers.states import FindWorker
 from keyboards.constants import START_MESSAGE, HELP_MESSAGE, MENU_KEYBOARD

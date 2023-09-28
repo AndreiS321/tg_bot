@@ -3,9 +3,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from bot import Bot
-from database.crud import WorkersAccessor
+from database.crud.crud import WorkersAccessor
+
 from database.models import Worker
-from handlers.client.utils import send_worker, save_prev_state, load_prev_state
+from handlers.admin.utils import send_worker, save_prev_state, load_prev_state
 from handlers.decorators import get_accessor
 from handlers.states import UpdateWorker, DeleteWorker
 from keyboards.constants import (
@@ -19,6 +20,7 @@ from keyboards.constants import (
     DELETE_WORKER_QUESTION,
     DELETE_WORKER_SUCCESS,
     CONFIRM_DELETE_KEYBOARD,
+    USER_NOT_EXIST,
 )
 
 router = Router()
@@ -33,10 +35,10 @@ async def delete_worker(
 ):
     data = await state.get_data()
     worker_id = int(data["worker_id_delete"])
-    photo_url = Worker.get_image_url(worker_id).absolute()
+    res = await accessor.delete(record_id=worker_id)
+    photo_url = Worker.get_image_url(res.id).absolute()
     photo_url.unlink(missing_ok=True)
-    await accessor.delete(worker_id=worker_id)
-    await message.message.answer(text=DELETE_WORKER_SUCCESS)
+    await message.message.answer(text=DELETE_WORKER_SUCCESS if res else USER_NOT_EXIST)
     await load_prev_state(state)
     await message.answer()
 

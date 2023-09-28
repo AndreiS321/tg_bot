@@ -4,7 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from bot import Bot
-from database.crud import WorkersAccessor
+from database.crud.crud import WorkersAccessor
+
 from database.models import Worker
 from handlers.decorators import get_accessor
 from handlers.states import AddWorker

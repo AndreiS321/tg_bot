@@ -3,11 +3,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from bot import Bot
-from database.crud import WorkersAccessor
+from database.crud.crud import WorkersAccessor
+
 from database.models import Worker
-from handlers.client.utils import send_worker, save_prev_state, load_prev_state
+from handlers.admin.utils import send_worker, save_prev_state, load_prev_state
 from handlers.decorators import get_accessor
 from handlers.states import UpdateWorker
+from handlers.utils import to_date
 from keyboards.constants import (
     UPDATE_NAME_MESSAGE,
     UPDATE_SURNAME_MESSAGE,
@@ -15,6 +17,8 @@ from keyboards.constants import (
     UPDATE_POSITION_MESSAGE,
     UPDATE_PROJECT_MESSAGE,
     UPDATE_IMAGE_MESSAGE,
+    WRONG_DATE,
+    UPDATE_DATE_MESSAGE,
 )
 
 router = Router()
@@ -54,7 +58,7 @@ async def update_worker_project(
     project = message.text
     data = await state.get_data()
     worker_id = int(data["worker_id_update"])
-    cur_worker = await accessor.update(worker_id, project=project)
+    cur_worker = await accessor.update(record_id=worker_id, project=project)
     await send_worker(message, cur_worker)
     await load_prev_state(state)
 
@@ -76,7 +80,7 @@ async def update_worker_position(
     position = message.text
     data = await state.get_data()
     worker_id = int(data["worker_id_update"])
-    cur_worker = await accessor.update(worker_id, position=position)
+    cur_worker = await accessor.update(record_id=worker_id, position=position)
     await send_worker(message, cur_worker)
     await load_prev_state(state)
 
@@ -98,7 +102,7 @@ async def update_worker_patronymic(
     patronymic = message.text
     data = await state.get_data()
     worker_id = int(data["worker_id_update"])
-    cur_worker = await accessor.update(worker_id, patronymic=patronymic)
+    cur_worker = await accessor.update(record_id=worker_id, patronymic=patronymic)
     await send_worker(message, cur_worker)
     await load_prev_state(state)
 
@@ -120,7 +124,7 @@ async def update_worker_surname(
     surname = message.text
     data = await state.get_data()
     worker_id = int(data["worker_id_update"])
-    cur_worker = await accessor.update(worker_id, surname=surname)
+    cur_worker = await accessor.update(record_id=worker_id, surname=surname)
     await send_worker(message, cur_worker)
     await load_prev_state(state)
 
@@ -142,7 +146,7 @@ async def update_worker_name(
     name = message.text
     data = await state.get_data()
     worker_id = int(data["worker_id_update"])
-    cur_worker = await accessor.update(worker_id, name=name)
+    cur_worker = await accessor.update(record_id=worker_id, name=name)
     await send_worker(message, cur_worker)
     await load_prev_state(state)
 
@@ -154,3 +158,28 @@ async def update_worker_name_callback(message: CallbackQuery, state: FSMContext)
     await state.update_data(worker_id_update=message.data.split(":")[-1])
     await message.message.answer(text=UPDATE_NAME_MESSAGE)
     await message.answer()
+
+
+@router.message(UpdateWorker.waiting_for_date)
+@get_accessor(WorkersAccessor)
+async def update_worker_date(
+    message: Message, state: FSMContext, accessor: WorkersAccessor
+):
+    date = to_date(message.text)
+    if not date:
+        await message.answer(text=WRONG_DATE)
+        return None
+    data = await state.get_data()
+    worker_id = int(data["worker_id_update"])
+    cur_worker = await accessor.update(record_id=worker_id, created_date=date)
+    await send_worker(message, cur_worker)
+    await load_prev_state(state)
+
+
+@router.callback_query(F.data.startswith("update:date"))
+async def update_worker_date_callback(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(UpdateWorker.waiting_for_date)
+    await save_prev_state(state)
+    await state.update_data(worker_id_update=callback.data.split(":")[-1])
+    await callback.message.answer(text=UPDATE_DATE_MESSAGE)
+    await callback.answer()

@@ -2,12 +2,12 @@ import asyncio
 
 from bot import dp, bot
 from database.db import Database
-from handlers.client.service import router as service_router
-from handlers.client.common import router as common_router
-from handlers.client.crud.create import router as add_router
-from handlers.client.crud.get import router as get_router
-from handlers.client.crud.update import router as update_router
-from handlers.client.crud.delete import router as delete_router
+from handlers.admin.service import router as service_router
+from handlers.admin.common import router as common_router
+from handlers.admin.create import router as add_router
+from handlers.user.get import router as get_router
+from handlers.admin.update import router as update_router
+from handlers.admin.delete import router as delete_router
 
 
 async def register_routers() -> None:

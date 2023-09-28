@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime
+
+from aiogram.types import FSInputFile
 
 
 @dataclass
@@ -9,6 +11,14 @@ class WorkerDC:
     surname: str
     position: str
     project: str
-    created_date: date
+    created_date: datetime
+
+    image: FSInputFile
 
     patronymic: str | None = None
+
+
+@dataclass
+class AdminDC:
+    id: int
+    tg_id: int
