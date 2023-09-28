@@ -3,10 +3,14 @@ from aiogram.types import Message
 
 from database.dataclasses import WorkerDC
 from database.models import Worker
-from keyboards.client import get_worker_keyboard
+from keyboards.utils import get_worker_keyboard
+from keyboards.constants import USER_NOT_EXIST
 
 
-async def send_worker(message: Message, worker: WorkerDC):
+async def send_worker(message: Message, worker: WorkerDC | None):
+    if not worker:
+        await message.answer(text=USER_NOT_EXIST)
+        return None
     keyboard = get_worker_keyboard(worker)
     photo = Worker.get_image(worker.id)
 
